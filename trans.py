@@ -229,4 +229,5 @@ Across_device_result.show()
 
 Across_device_result.write.csv("s3://twinkal11/project_Raw_data/Across_layer/across_device.csv",mode="overwrite")
 
-#auto_df.write.mode("overwrite").saveAsTable("autompg")
+Across_device_result.write.mode("overwrite").saveAsTable("log_agg_across_device")
+per_device.write.mode('overwrite').saveAsTable("per_device")
