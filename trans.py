@@ -8,24 +8,11 @@ spark = SparkSession.builder\
         .master("local")\
         .appName("demo")\
         .enableHiveSupport()\
-        .config('spark.jars.packages', 'net.snowflake:snowflake-jdbc:3.13.23,net.snowflake:spark-snowflake_2.12:2.11.0-spark_3.3')\
         .getOrCreate()
-
-sfOptions = {
-  "sfURL" : "https://app.snowflake.com/ap-south-1.aws/hh82548/worksheets",
-  "sfUser" : "twinkaldesai",
-  "sfPassword" : "twinkal@123",
-  "sfDatabase" : "twinkal_DATA",
-  "sfSchema" : "CURATED_DATA",
-  "sfWarehouse" :"COMPUTE_WH"
-}
-
-SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
-
 
 import re
 #read data from local
-df=spark.read.text("s3://twinkal11/project_Raw_data/log_data_ip_request.txt")
+df=spark.read.text("s3://twinkal11//project_Raw_data//project_Raw_data//log_data_ip_request.txt")
 
 df.printSchema()
 
@@ -90,7 +77,7 @@ from pyspark.sql.functions import when
 New_refer = df1.withColumn("new_refer", when(df1.referer == "","N").otherwise("Y"))
 New_refer.show(5)
 
-New_refer.write.csv("s3://twinkal11/project_Raw_data/clean_layer/clean_layer.csv",mode="overwrite")
+New_refer.write.csv("s3://twinkal11//project_Raw_data//clean_layer//clean_layer.csv",mode="overwrite")
 
 df1.filter( (df1.referer  == "") | (df1.referer  == df1.referer) ) \
     .show(5,truncate=True)
@@ -100,7 +87,7 @@ clean=New_refer.drop("referer")
 
 clean.show(6)
 
-clean.write.csv("s3://twinkal11/project_Raw_data/curated_layer/curatelayer.csv",mode="overwrite")
+clean.write.csv("s3://twinkal11//project_Raw_data//curated_layer//curatelayer.csv",mode="overwrite")
 
 #AGGREGATION
 
@@ -212,8 +199,8 @@ per_device_result=curated.select("*").groupBy("User_device").agg(count("Row_id")
 
 per_device_result.show()
 
-per_device.write.csv("s3://twinkal11/project_Raw_data/per_device/perdevice.csv",mode="overwrite")
-per_device_result.write.csv("s3://twinkal11/project_Raw_data/per_dev_res_layer/per_device_res.csv",mode="overwrite")
+per_device.write.csv("s3://twinkal11/project_Raw_data//per_device//perdevice.csv",mode="overwrite")
+per_device_result.write.csv("s3://twinkal11//project_Raw_data//per_device_result//per_device_res.csv",mode="overwrite")
 
 
 #Across Device Aggregation
@@ -227,7 +214,42 @@ Across_device_result=curated.select("*").agg(count("Row_id").alias("Row_id"),
 
 Across_device_result.show()
 
-Across_device_result.write.csv("s3://twinkal11/project_Raw_data/Across_layer/across_device.csv",mode="overwrite")
+Across_device_result.write.csv("s3://twinkal11/project_Raw_data//Across_layer//across_device.csv",mode="overwrite")
 
-Across_device_result.write.mode("overwrite").saveAsTable("log_agg_across_device")
-per_device.write.mode('overwrite').saveAsTable("per_device")
+Across_device_result.write.mode("overwrite").saveAsTable("Across_device")
+per_device_result.write.mode("overwrite").saveAsTable("Per_device")
+
+
+# def main():
+#     SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
+#     snowflake_database = "TESTEMR"
+#     snowflake_schema = "PUBLIC"
+#     source_table_name = "AGENTS"
+#     snowflake_options = {
+#     "sfUrl": sg21349.ap - south - 1.aws.snowflakecomputing.com,
+#     "sfUser": "KAMALNAYAN",
+#     "sfPassword": "Atvks123@@",
+#     "sfDatabase": "snowflake_database",
+#     "sfSchema": snowflake_schema,
+#     "sfWarehouse": "TEST_WH"
+#     }
+#     df = spark.read \
+#         .format(SNOWFLAKE_SOURCE_NAME) \
+#         .options(**snowflake_options) \
+#         .option("query", "select * from AGENTS") \
+#         .load()
+#     df1 = df.select("AGENT_CODE")
+#     df1.write.format("snowflake") \
+#         .options(**snowflake_options) \
+#         .option("dbtable", "agentcode").mode("overwrite") \
+#         .save()
+#
+#
+# main()
+
+
+
+
+
+
+
