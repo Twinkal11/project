@@ -219,37 +219,27 @@ Across_device_result.write.csv("s3://twinkal11/project_Raw_data//Across_layer//a
 Across_device_result.write.mode("overwrite").saveAsTable("Across_device")
 per_device_result.write.mode("overwrite").saveAsTable("Per_device")
 
-
-# def main():
-#     SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
-#     snowflake_database = "TESTEMR"
-#     snowflake_schema = "PUBLIC"
-#     source_table_name = "AGENTS"
-#     snowflake_options = {
-#     "sfUrl": sg21349.ap - south - 1.aws.snowflakecomputing.com,
-#     "sfUser": "KAMALNAYAN",
-#     "sfPassword": "Atvks123@@",
-#     "sfDatabase": "snowflake_database",
-#     "sfSchema": snowflake_schema,
-#     "sfWarehouse": "TEST_WH"
-#     }
-#     df = spark.read \
-#         .format(SNOWFLAKE_SOURCE_NAME) \
-#         .options(**snowflake_options) \
-#         .option("query", "select * from AGENTS") \
-#         .load()
-#     df1 = df.select("AGENT_CODE")
-#     df1.write.format("snowflake") \
-#         .options(**snowflake_options) \
-#         .option("dbtable", "agentcode").mode("overwrite") \
-#         .save()
-#
-#
-# main()
+def main():
+    SNOWFLAKE_SOURCE_NAME = "net.snowflake.spark.snowflake"
+    snowflake_database = "TWINKAL_DEMO"
+    snowflake_schema = "PUBLIC"
+    snowflake_options = {
+    "sfUrl":"https://app.snowflake.com/ap-south-1.aws/wq71446/w26bJ0UWlpUE#query",
+    "sfUser": "twinkaldesai",
+    "sfPassword": "Twinkal@123",
+    "sfDatabase": "TWINKAL_DATA",
+    "sfSchema": "PUBLIC",
+    "sfWarehouse": "DEMO"
+    }
+    df = spark.read\
+        .format('parquet').load('s3://twinkal11/project_Raw_data/curated_layer/curatelayer.csv/part-00000-65844081-0a85-4d6d-94d6-17a061cb03ba-c000.csv')
+    df1 = df.select("Row_id","No_Head","No_post","No_get","host","timestamp","method","request","status","content_size","new_refer","User_agent")
+    df1.write.format("snowflake")\
+        .options(**snowflake_options)\
+        .option("dbtable", "curated_table").mode("overwrite")\
+        .save()
 
 
-
-
-
+main()
 
 
