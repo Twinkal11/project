@@ -34,22 +34,19 @@ class raw_ly:
     status = r'\s(\d{3})\s'
     content_size_pattern = r'\s(\d{4,5})\s'
     referer_pattern = r'("https(\S+)")'
-    # user_pattern=r'"(Mozilla|Dal)(\S+\s\S+)+"'
-    useragent_pattern = r'(Mozilla|Dalvik)(\S+\s+)*'
-    user_device_pattern = r'(Mozilla|Dal|Goog|troob|bar)\S*\s\((\w+;?\s+\w+)'
+   
+    # user_device_pattern = r'(Mozilla|Dal|Goog|troob|bar)\S*\s\((\w+;?\s+\w+)'
 
 
     self.logs_df = df.withColumn("Row_id", monotonically_increasing_id()) \
-            .select("Row_id", regexp_extract('value', host, 1).alias('host'),
+            .select("Row_id", regexp_extract('value', host, 1).alias('client/ip'),
                     regexp_extract('value', time_stamp, 1).alias('timestamp'),
                     regexp_extract('value', method_uri_protocol_pattern, 1).alias('method'),
                     regexp_extract('value', method_uri_protocol_pattern, 2).alias('request'),
-                    regexp_extract('value', method_uri_protocol_pattern, 3).alias('protocol'),
+                    # regexp_extract('value', method_uri_protocol_pattern, 3).alias('protocol'),
                     regexp_extract('value', status, 1).cast('integer').alias('status'),
                     regexp_extract('value', content_size_pattern, 1).cast('integer').alias('content_size'),
-                    regexp_extract('value', referer_pattern, 1).alias('referer'),
-                    regexp_extract('value', useragent_pattern, 0).alias('User_agent'),
-                    regexp_extract('value', user_device_pattern, 2).alias('User_device')
+                    regexp_extract('value', referer_pattern, 1).alias('referer')
                     )
     self.logs_df.show()
 
@@ -59,8 +56,8 @@ class raw_ly:
 
   def show_On_Hive(self):
     pass
-    self.logs_df.write.option("mode","overwrite").saveAsTable('Raw_Data1')
-    self.spark.sql("select count(*) from Raw_Data1").show()
+    self.logs_df.write.option("mode","overwrite").saveAsTable('Raw_D')
+    self.spark.sql("select count(*) from Raw_D").show()
 
 
 if __name__ == '__main__':
