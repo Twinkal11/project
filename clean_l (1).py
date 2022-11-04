@@ -21,18 +21,21 @@ from pyspark.sql.functions import desc
 class clean_layer():
   spark = SparkSession.builder.appName("Project-Stage-II").config('spark.ui.port', '4050')\
         .config("spark.master", "local").enableHiveSupport().getOrCreate()
-  clean_df = spark.read.csv("/content/drive/MyDrive/raw_layer/raw_l.csv/",header="True")
+  clean_df = spark.read.csv("/content/drive/MyDrive/raw_layer/raw_l.csv",header="True")
+ 
   
   def clean(self):
-
+    self.clean_df.show()     
     spe_char = r'[%,|"-&.=?-]'
+    # self.clean_df.na.fill("NA").show() 
 #withColumn("timestamp", to_timestamp("timestamp", "dd/MMM/yyyy:HH:mm:ss")) \
     self.clean_df=self.clean_df.withColumn("timestamp", to_timestamp("timestamp", "dd/MMM/yyyy:HH:mm:ss"))\
             .withColumn("request", regexp_replace("request", spe_char, "")) \
-            .withColumn("size", round(col("content_size") / 1024, 2)) \
-            .withColumn('referer_present', when(col('referer') == '', 'N') \
-                        .otherwise('Y'))
-            
+            .withColumn("content_size", round(col("content_size") / 1024, 2,)) \
+            .withColumn('referer_present', when(col('referer').isNull(), 'N') \
+                        .otherwise('Y'))\
+            .withColumnRenamed("content_size","Size_kb")
+           
   def clean_lyr(self):
     self.clean_df = self.clean_df.withColumn("date", split(self.clean_df["timestamp"], ' ') \
                                           .getItem(0)).withColumn("datetimestamp",
@@ -43,7 +46,7 @@ class clean_layer():
 
     self.clean_df.printSchema()
 
-    self.clean_df.na.fill("NA")
+    # self.clean_df.na.fill("NA")
 
     curated= self.clean_df.drop('referer')
     curated.show(truncate=False)
@@ -54,9 +57,8 @@ class clean_layer():
     self.clean_df.write.csv("/content/drive/MyDrive/clean_layer/", header=True,mode='overwrite')
 
   def hive_table_for_clean(self):
-    pass
-    self.clean_df.write.option("mode","overwrite").saveAsTable('clean_data1')
-    self.spark.sql("select count(*) from clean_data1").show()
+    self.clean_df.write.option("mode","overwrite").saveAsTable('clean_d')
+    self.spark.sql("select count(*) from clean_d").show()
 
 
 if __name__ == '__main__':
@@ -65,4 +67,5 @@ if __name__ == '__main__':
     clean_l.clean_lyr()
     clean_l.clean_save()
     clean_l.hive_table_for_clean()
+
 
