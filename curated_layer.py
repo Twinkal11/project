@@ -21,57 +21,58 @@ from pyspark.sql.functions import desc
 class curated_layer():
   spark = SparkSession.builder.appName("Project-Stage-II").config('spark.ui.port', '4050')\
         .config("spark.master", "local").enableHiveSupport().getOrCreate()
-  curated = spark.read.csv("/content/drive/MyDrive/clean_layer",header="True")
+  curated = spark.read.csv("/content/drive/MyDrive/clean_layer/",header="True")
+  
   curated.groupBy("method").count().orderBy(desc("count")).show()
+  
   curated.select(count(curated.method)).show()
+  
   clean_df = curated.withColumn('Hour', hour('timestamp'))
-  clean_df.groupBy("host").count().orderBy(desc("count"))
-  clean_df.groupBy("User_device", "Hour").count().orderBy("count").show()
-  clean_df.groupBy("User_device").count().show()
-  clean_df.select(["host", "User_device"]).show(10)
+  
+  # clean_df.groupBy("host").count().orderBy(desc("count"))
+  
+ 
 
-  device_pattern = r'(Mozilla|Dalvik|Goog|torob|Bar).\d\S+\s\((\S\w+;?\s\S+(\s\d\.(\d\.)?\d)?)'
-  device_curated=clean_df.withColumn('device', regexp_extract(col('User_agent'), device_pattern, 2))
-  device_curated.show()
+  # device_pattern = r'(Mozilla|Dalvik|Goog|torob|Bar).\d\S+\s\((\S\w+;?\s\S+(\s\d\.(\d\.)?\d)?)'
+  # device_curated=clean_df.withColumn('device', regexp_extract(col('User_agent'), device_pattern, 2))
+  # device_curated.show()
 
 
   def curated_l(self):
 
     print("add column hour,Get,Post,Head")
-    self.curated_lyr =self.device_curated.withColumn("No_get", when(col("method") == "GET", "GET")) \
+    self.curated_lyr =self.clean_df.withColumn("No_get", when(col("method") == "GET", "GET")) \
             .withColumn("No_post", when(col("method") == "POST", "POST")) \
-            .withColumn("No_Head", when(col("method") == "HEAD", "HEAD"))
+            .withColumn("No_Head", when(col("method") == "HEAD", "HEAD"))\
+            # .withColumn("date","date")
     self.curated_lyr.show(500)
 
   def per_device(self):
       print("agg_per_ip")
         # # perform aggregation per device
-      self.agg_per_ip = self.curated_lyr.select("*").groupBy("host").agg(
-            count("Row_id").alias("row_id"), sum("Hour").alias("day_hour"), count("host").alias("count_client/ip"),
+      self.agg_per_ip = self.curated_lyr.select("*").groupBy("client/ip","date","Hour").agg(
+            count("Row_id").alias("row_id"),
             count(col("No_get")).alias("no_get"), count(col("No_post")).alias("no_post"),
-            count(col("No_head")).alias("no_head"))
+            count(col("No_Head")).alias("no_head"))
 
       self.agg_per_ip.show() 
 
 
-      print("per_device_result")
-      self.per_device_result = self.curated_lyr.select("*").groupBy("User_device").agg(count("Row_id").alias("Row_id"), \
-                                                                               sum("Hour").alias("Hour"),
-                                                                               count("host").alias("Client/IP"), \
-                                                                               count(col("No_get")).alias("NO_GET"),
-                                                                               count(col("No_post")).alias("NO_POST"), \
-                                                                               count(col("No_Head")).alias("NO_HEAD"))
-        
-      self.per_device_result.show()   
 
   def across_device(self):
       print("agg_across_device")
-      agg_across_device = self.curated_lyr.select("*").agg(count("Row_id").alias("row_id"),
-                                                    first("hour").alias("day_hour"),
-                                                    count("host").alias("count_client/ip"),
+      agg_across_device = self.curated_lyr.select("*").groupBy("date","Hour").agg(
+                                                   
+                                                    count("client/ip").alias("count_client_ip"),
                                                     count(col("No_get")).alias("no_get"),
                                                     count(col("No_post")).alias("no_post"),
                                                     count(col("No_head")).alias("no_head"))
+
+
+
+
+
+
 
       agg_across_device.show()
 
@@ -80,8 +81,8 @@ class curated_layer():
 
   def hive_table_for_per_ip(self):
     pass
-    self.agg_per_ip.write.option("mode","overwrite").saveAsTable('per_dev_ipp1')
-    self.spark.sql("select count(*) from per_dev_ipp1").show()
+    self.agg_per_ip.write.option("mode","overwrite").saveAsTable('per_dev___')
+    self.spark.sql("select count(*) from per_dev___").show()
   
   
    
