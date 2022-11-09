@@ -81,6 +81,7 @@ if __name__ == '__main__':
   raw = raw_ly()
   raw.read_csv_file()
   raw.remove_spec()
-  raw.show_On_Hive()
   raw.replace_null_with_None()
+  raw.save()  
+  raw.show_On_Hive()  
 
